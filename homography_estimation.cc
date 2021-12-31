@@ -12,17 +12,16 @@ using namespace colmap;
 
 namespace py = pybind11;
 
-// matched points
-
 /**
  * Recover the most probable pose from the inputted homography matrix.
  * 
- * @param H 3x3 homography matrix.
- * @param K1 3x3 intrinsics matrix for first camera.
- * @param K2 3x3 intrinsics matrix for second camera.
- * @param points1 First set of corresponding points: normalized beforehand.
- * @param points2 Second set of corresponding points: normalized beforehand.
- * @return The estimated homography matrix (3x3), 
+ * @param points2D1 First set of corresponding points.
+ * @param points2D2 Second set of corresponding points.
+ * @param max_error_px
+ * @param min_inlier_ratio
+ * @param min_num_trials
+ * @param max_num_trials
+ * @return The estimated homography matrix (3x3), ...
  */
 py::dict homography_matrix_estimation(
         const std::vector<Eigen::Vector2d> points2D1,
