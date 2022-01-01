@@ -22,11 +22,15 @@ namespace py = pybind11;
 * 
 * param points2D1,
 * param points2D2,
-* param
+* param camera_dict1
+* param camera_dict2
+*
 */
 py::dict two_view_geometry_estimation(
         const std::vector<Eigen::Vector2d> points2D1,
         const std::vector<Eigen::Vector2d> points2D2,
+        const py::dict camera_dict1,
+        const py::dict camera_dict2,
         const double max_error_px,
         const double min_inlier_ratio,
         const int min_num_trials,
@@ -38,11 +42,25 @@ py::dict two_view_geometry_estimation(
     // Check that both vectors have the same size.
     assert(points2D1.size() == points2D2.size());
 
+    // Failure output dictionary.
+    py::dict failure_dict;
+    failure_dict["success"] = false;
 
-    const Camera& camera1;
-    const Camera& camera2;
-    const FeatureMatches& matches;
-    const Options& options;
+    // Create cameras.
+    Camera camera1;
+    camera1.SetModelIdFromName(camera_dict1["model"].cast<std::string>());
+    camera1.SetWidth(camera_dict1["width"].cast<size_t>());
+    camera1.SetHeight(camera_dict1["height"].cast<size_t>());
+    camera1.SetParams(camera_dict1["params"].cast<std::vector<double>>());
+
+    Camera camera2;
+    camera2.SetModelIdFromName(camera_dict2["model"].cast<std::string>());
+    camera2.SetWidth(camera_dict2["width"].cast<size_t>());
+    camera2.SetHeight(camera_dict2["height"].cast<size_t>());
+    camera2.SetParams(camera_dict2["params"].cast<std::vector<double>>());
+
+    const FeatureMatches matches;
+    const Options options;
  
     TwoViewGeometry two_view_geometry;
     TwoViewGeometry::Options two_view_geometry_options;
@@ -54,7 +72,7 @@ py::dict two_view_geometry_estimation(
     py::dict success_dict;
 
     if (!two_view_geometry.EstimateRelativePose(camera1, points1, camera2, points2)) {
-        success_dict["success"] = false;
+        return failure_dict;
     } else {
         success_dict["success"] = true;
     }
